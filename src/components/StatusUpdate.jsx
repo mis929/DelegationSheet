@@ -1,65 +1,48 @@
 import React, { useState, useEffect } from 'react';
 
 export default function StatusUpdate({ apiBaseUrl }) {
-  const [task, setTask] = useState(null);
-  const [status, setStatus] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const urlParams = new URLSearchParams(window.location.search);
+  const taskId = urlParams.get('taskId');
 
-  const queryParams = new URLSearchParams(window.location.search);
-  const taskId = queryParams.get('taskId');
-
-  const fetchTaskDetails = async () => {
-    const res = await fetch(`${apiBaseUrl}?action=getDashboardData`);
-    const data = await res.json();
-    const found = data.tasks?.find(t => t.id === taskId);
-    if (found) { setTask(found); setStatus(found.status); }
-    setLoading(false);
-  };
-
-  useEffect(() => { if (taskId) fetchTaskDetails(); }, [taskId]);
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+  const handleComplete = async () => {
+    if (!taskId) return alert("Task ID is missing!");
     setLoading(true);
     try {
       const res = await fetch(apiBaseUrl, {
         method: "POST",
-        body: JSON.stringify({ action: "updateStatus", taskId, status })
+        body: JSON.stringify({ action: "updateStatus", taskId: taskId, status: "Completed" })
       });
       const data = await res.json();
       if (data.success) {
-        alert(`Status updated to ${status}! System Score allocated.`);
-        window.location.href = "/";
+        setSuccess(true);
+        alert("Great job! Task marked as Completed successfully. 🎉");
+        // CRITICAL: Yahan koi window.location.reload() ya clear session nahi lagana hai!
       }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
 
-  if (loading) return <div className="p-12 text-center text-slate-500 font-bold">Verifying Sheet Log Entity...</div>;
-  if (!task) return <div className="p-12 text-center text-rose-500 font-bold">Error: Requested Task Node Not Found</div>;
+  if (!taskId) return <div className="p-12 text-center text-red-600 font-bold">Invalid Security Link. Token Missing.</div>;
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-3xl shadow-xl border w-full max-w-md space-y-6">
-        <div>
-          <span className="text-xs font-black bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full uppercase tracking-widest">{task.recurrenceType}</span>
-          <h2 className="text-2xl font-black text-slate-800 mt-2">{task.title}</h2>
-          <p className="text-sm text-slate-500 mt-1">{task.description}</p>
-        </div>
-        <div className="bg-slate-50 p-4 rounded-xl text-xs space-y-2 text-slate-600 font-medium">
-          <p>⭐ Allocated Score: <span className="text-amber-600 font-bold">{task.points} Points</span></p>
-          <p>📅 Timeline Limit: <span className="text-rose-600 font-bold">{task.deadline}</span></p>
-        </div>
-        <form onSubmit={handleUpdate} className="space-y-4">
-          <select value={status} onChange={e => setStatus(e.target.value)} className="w-full border p-3.5 bg-slate-50 rounded-xl text-sm font-bold">
-            <option value="Pending">⌛ Pending Log</option>
-            <option value="In Progress">⚙️ In Progress</option>
-            <option value="Completed">✅ Mark Fully Completed</option>
-          </select>
-          <button type="submit" className="w-full bg-emerald-600 text-white font-bold p-3.5 rounded-xl hover:bg-emerald-700 transition shadow-lg">
-            Commit Execution & Award Scores
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-3xl max-w-md w-full text-center space-y-6 shadow-2xl border border-slate-100">
+        <h2 className="text-2xl font-black text-slate-800">Task Action Terminal</h2>
+        <p className="text-sm text-slate-500 font-medium bg-slate-50 p-3 rounded-xl border">Updating Status for: <span className="font-mono text-indigo-600 font-bold">{taskId}</span></p>
+        
+        {success ? (
+          <div className="bg-emerald-50 text-emerald-700 font-bold p-4 rounded-xl border border-emerald-100">✓ Task Successfully Executed & Closed!</div>
+        ) : (
+          <button
+            onClick={handleComplete}
+            disabled={loading}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black p-4 rounded-xl transition shadow-lg shadow-emerald-600/20"
+          >
+            {loading ? "Processing..." : "Mark as COMPLETED ✓"}
           </button>
-        </form>
+        )}
       </div>
     </div>
   );

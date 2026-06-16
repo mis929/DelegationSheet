@@ -1,6 +1,25 @@
 const GREEN_API_ID = "7107628437"; 
 const GREEN_API_TOKEN = "7196edcfec4149228a084c62b7eabc4da111f13c430c416887";
-// 🚀 NAYA SOLUTION: Pure din ki Task List Table format me bhejne ke liye function
+// ⚠️ Apne Green API Console se dekh kar sahi Instance ID aur Token daalein
+export const triggerWhatsAppAlert = async (phone, taskTitle, points, deadline, taskId) => {
+  if (!phone) return;
+  let cleanPhone = String(phone).replace(/\D/g, "");
+  const targetPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+  const url = `https://api.green-api.com/waInstance${GREEN_API_ID}/sendMessage/${GREEN_API_TOKEN}`;
+  const fullStatusLink = `https://delegation-sheet.vercel.app/update-status?taskId=${taskId}`;
+  
+  let message = `📌 *ACTION REQUIRED: NEW TASK ASSIGNED* 📌\n\n` +
+                `*Task:* ${taskTitle}\n` +
+                `*Points:* ⭐ ${points} Pts\n` +
+                `*Target Date:* 📅 ${deadline}\n\n` +
+                `⚠️ *TASK STATUS UPDATE LINK:* ⚠️\n${fullStatusLink}`;
+
+  try {
+    await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chatId: `${targetPhone}@c.us`, message }) });
+  } catch (err) { console.error(err); }
+};
+
+// 🎯 YEH NAYA FUNCTION HAI JO TELEGRAM/PDF JAISA CONSOLIDATED MESSAGE BHEJEGA
 export const sendConsolidatedTaskDigest = async (phone, employeeName, tasksList) => {
   if (!phone || !tasksList || tasksList.length === 0) return;
 
@@ -8,40 +27,23 @@ export const sendConsolidatedTaskDigest = async (phone, employeeName, tasksList)
   const targetPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
   const url = `https://api.green-api.com/waInstance${GREEN_API_ID}/sendMessage/${GREEN_API_TOKEN}`;
 
-  // Current Date format
-  const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
-  // Header System
   let message = `Hello *${employeeName}*,\n\n` +
-                `Here is the list of tasks for you to complete. Please note that the below list contains the *Pending* tasks, Today's tasks and *Planned* tasks.\n\n` +
-                `Tasks can be recurring or one time in nature.\n\n` +
-                `*📋 PLANNED/PENDING TASK LIST AS ON ${todayStr}*\n` +
+                `Aapke complete karne ke liye niche diye gaye tasks assign kiye gaye hain. Kripya details aur Target Date ke mutabik update karein:\n\n` +
                 `━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-  // Dynamic Row Compilation (Jaise aapki PDF Table me tha)
   tasksList.forEach((task, index) => {
-    const statusEmoji = task.status === 'Pending' ? '🔴' : '🟡';
     const baseUpdateLink = `https://delegation-sheet.vercel.app/update-status?taskId=${task.id}`;
-
-    message += `*Task No.* ${index + 1}\n` +
-               `*🔹 Task Details:* ${task.title}\n` +
-               `*🔹 Status:* ${statusEmoji} ${task.status}\n` +
-               `*🔹 Merit Value:* ⭐ ${task.points} Pts\n` +
-               `*🔗 Action Link:* ${baseUpdateLink}\n` +
+    message += `*️⃣ *Task Number:* ${index + 1}\n` +
+               `👤 *Employee Name:* ${employeeName}\n` +
+               `📅 *Target Date:* ${task.deadline || 'N/A'}\n` +
+               `📝 *Task Detail:* ${task.title}\n` +
+               `🔗 *Status Update Link:* ${baseUpdateLink}\n` +
                `----------------------------------------\n\n`;
   });
 
-  message += `_(Note: Agar links click na ho rahe hon, toh is chat me pehle ek baar "OK" likh kar reply kar dein)_`;
+  message += `_(Note: Agar link blue na ho, toh pehle chat me "OK" likh kar reply karein)_`;
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chatId: `${targetPhone}@c.us`, message: message })
-    });
-    const result = await response.json();
-    console.log("Digest Message Sent status:", result);
-  } catch (err) {
-    console.error("Digest transmission collapsed:", err);
-  }
+    await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chatId: `${targetPhone}@c.us`, message }) });
+  } catch (err) { console.error(err); }
 };
