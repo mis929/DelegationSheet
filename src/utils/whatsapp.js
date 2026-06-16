@@ -10,7 +10,7 @@ export const triggerWhatsAppAlert = async (phone, taskTitle, points, deadline, t
   
   // ⚡ LINK TRICK: Localhost ko ngrok ya local IP se access karein, ya direct link bhejein
   // Agar aap mobile par test kar rahe hain, toh localhost ki jagah apne laptop ka IP address dalein (Jaise: 192.168.1.5)
-  const baseLink = "http://localhost:5173/update-status";
+  const baseLink = "https://delegation-sheet.vercel.app/";
   const fullStatusLink = `${baseLink}?taskId=${taskId}`;
   
   let message = `📌 *ACTION REQUIRED: NEW TASK ASSIGNED* 📌\n\n` +
