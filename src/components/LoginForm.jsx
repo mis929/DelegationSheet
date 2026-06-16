@@ -16,12 +16,13 @@ export default function LoginForm({ apiBaseUrl, onLoginSuccess }) {
       const data = await res.json();
       console.log(res)
       if (data.success) {
-        onLoginSuccess(data.user);
+        onLoginSuccess(data.status);
 
       } else {
         alert(data.message || "Invalid Details");
       }
     } catch (err) {
+      console.log(err)
       alert("Database connection failed!");
     } finally { setLoading(false); }
   };
