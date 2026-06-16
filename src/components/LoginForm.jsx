@@ -14,8 +14,10 @@ export default function LoginForm({ apiBaseUrl, onLoginSuccess }) {
         body: JSON.stringify({ action: "login", email, password })
       });
       const data = await res.json();
+      console.log(res)
       if (data.success) {
         onLoginSuccess(data.user);
+
       } else {
         alert(data.message || "Invalid Details");
       }
