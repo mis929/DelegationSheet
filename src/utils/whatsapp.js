@@ -1,40 +1,47 @@
 const GREEN_API_ID = "7107628437"; 
-const GREEN_API_TOKEN = "7196edcfec4149228a084c62b7eabc4da111f13c430c416887"; 
-export const triggerWhatsAppAlert = async (phone, taskTitle, points, deadline, taskId) => {
-  if (!phone) return;
-  
+const GREEN_API_TOKEN = "7196edcfec4149228a084c62b7eabc4da111f13c430c416887";
+// 🚀 NAYA SOLUTION: Pure din ki Task List Table format me bhejne ke liye function
+export const sendConsolidatedTaskDigest = async (phone, employeeName, tasksList) => {
+  if (!phone || !tasksList || tasksList.length === 0) return;
+
   let cleanPhone = String(phone).replace(/\D/g, "");
   const targetPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-  
   const url = `https://api.green-api.com/waInstance${GREEN_API_ID}/sendMessage/${GREEN_API_TOKEN}`;
-  
-  // ⚡ LINK TRICK: Localhost ko ngrok ya local IP se access karein, ya direct link bhejein
-  // Agar aap mobile par test kar rahe hain, toh localhost ki jagah apne laptop ka IP address dalein (Jaise: 192.168.1.5)
-  const baseLink = "https://delegation-sheet.vercel.app/";
-  const fullStatusLink = `${baseLink}?taskId=${taskId}`;
-  
-  let message = `📌 *ACTION REQUIRED: NEW TASK ASSIGNED* 📌\n\n` +
-                `*Task:* ${taskTitle}\n` +
-                `*Points:* ⭐ ${points} Pts\n` +
-                `*Target Date:* 📅 ${deadline}\n\n` +
-                `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                `⚠️ *TASK KO UPDATE/COMPLETE KARNE KE LIYE NICHE DIYE GAYE LINK PAR CLICK KAREIN:* ⚠️\n\n` +
-                `${fullStatusLink}\n\n` +
-                `_(Agar upar wala link click na ho, toh pehle is chat me "OK" ya "Hi" likh kar reply karein)_`;
+
+  // Current Date format
+  const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  // Header System
+  let message = `Hello *${employeeName}*,\n\n` +
+                `Here is the list of tasks for you to complete. Please note that the below list contains the *Pending* tasks, Today's tasks and *Planned* tasks.\n\n` +
+                `Tasks can be recurring or one time in nature.\n\n` +
+                `*📋 PLANNED/PENDING TASK LIST AS ON ${todayStr}*\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  // Dynamic Row Compilation (Jaise aapki PDF Table me tha)
+  tasksList.forEach((task, index) => {
+    const statusEmoji = task.status === 'Pending' ? '🔴' : '🟡';
+    const baseUpdateLink = `https://delegation-sheet.vercel.app/update-status?taskId=${task.id}`;
+
+    message += `*Task No.* ${index + 1}\n` +
+               `*🔹 Task Details:* ${task.title}\n` +
+               `*🔹 Status:* ${statusEmoji} ${task.status}\n` +
+               `*🔹 Merit Value:* ⭐ ${task.points} Pts\n` +
+               `*🔗 Action Link:* ${baseUpdateLink}\n` +
+               `----------------------------------------\n\n`;
+  });
+
+  message += `_(Note: Agar links click na ho rahe hon, toh is chat me pehle ek baar "OK" likh kar reply kar dein)_`;
 
   try {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        chatId: `${targetPhone}@c.us`, 
-        message: message 
-      })
+      body: JSON.stringify({ chatId: `${targetPhone}@c.us`, message: message })
     });
-    
     const result = await response.json();
-    console.log("Green API Broadcast Success:", result);
+    console.log("Digest Message Sent status:", result);
   } catch (err) {
-    console.error("WhatsApp Link Generator Error:", err);
+    console.error("Digest transmission collapsed:", err);
   }
 };
