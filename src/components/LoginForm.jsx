@@ -10,7 +10,7 @@ export default function LoginForm({ apiBaseUrl, onLoginSuccess }) {
     setLoading(true);
     try {
       const res = await fetch(apiBaseUrl, {
-        method: "POST",
+        method: "GET",
         body: JSON.stringify({ action: "login", email, password })
       });
       const data = await res.json();
