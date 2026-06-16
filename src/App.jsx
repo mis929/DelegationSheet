@@ -4,7 +4,7 @@ import TaskForm from './components/TaskForm';
 import StatusUpdate from './components/StatusUpdate';
 
 // ⚠️ YAHAN APNA ASLI GOOGLE WEB APP SCRIPT URL COPY-PASTE KAREIN
-const DEPLOYMENT_API_URL = "https://script.google.com/macros/s/AKfycbzSrwADGCumOhLQhfOt_gGnGVItdxZFBPj350BFGvmi9ZCJP74KGP0WCJTPY4KnMzUuNg/exec";
+const DEPLOYMENT_API_URL = "https://script.google.com/macros/s/AKfycbwUmu7yKgXED7kh1f7fW-kd2GsVTlzjZsutoVI8Nggz6qf2C7mXTU_0eHFPGCAkLE90tQ/exec";
 
 export default function App() {
   const [session, setSession] = useState(null);
