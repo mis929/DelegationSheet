@@ -4,7 +4,7 @@ import TaskForm from './components/TaskForm';
 import StatusUpdate from './components/StatusUpdate';
 
 // ⚠️ Yahan apna Google Web App script URL daalna mat bhoolna!
-const DEPLOYMENT_API_URL = "YOUR_GOOGLE_SCRIPT_WEB_APP_URL";
+const DEPLOYMENT_API_URL = "https://script.google.com/macros/s/AKfycbxMoIydZJeivJj-4HNGp_ohQyzv067kW0XjfJAFkrUWXcS09K4YOjDKwNuzYNzQZ3sb/exec";
 
 export default function App() {
   const [session, setSession] = useState(null);
